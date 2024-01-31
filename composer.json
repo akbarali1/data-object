@@ -1,10 +1,9 @@
 {
   "name":"akbarali/data-object",
-  "version":"1.1",
+  "version":"1.1.1",
   "description":"Data Object PHP Laravel",
   "license":"MIT",
   "minimum-stability":"stable",
-  "type":"library",
   "keywords":[
     "php",
     "laravel"
