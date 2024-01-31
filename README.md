@@ -25,7 +25,7 @@ $object = DataObj::createFromJson('{"key1":"value1","key2":"value2"}');
 
 Avval DataObjectlar yaratib olamiz `StoreData`
 ```php
-class StoreData extends \Akbarali\DataObject\DataObjectBase
+class StoreData extends /Akbarali/DataObject/DataObjectBase
 {
     public ?string $id;
     public ?int    $user_id;
@@ -42,7 +42,7 @@ class StoreData extends \Akbarali\DataObject\DataObjectBase
 ```
 `UserData`
 ```php
-class UserData extends DataObjectBase
+class UserData extends /Akbarali/DataObject/DataObjectBase
 {
     public ?int    $id;
     public ?string $name;
@@ -58,7 +58,7 @@ class UserData extends DataObjectBase
 ```
 `RoleData`
 ```php
-class RoleData extends DataObjectBase
+class RoleData extends /Akbarali/DataObject/DataObjectBase
 {
     public int    $id;
     public string $name;
