@@ -1,0 +1,23 @@
+{
+  "name":"akbarali/data-object",
+  "description":"Data Object PHP",
+  "autoload":{
+    "psr-4":{
+      "Akbarali\\DataObject\\":"src/"
+    }
+  },
+  "authors":[
+    {
+      "name":"Akbarali",
+      "email":"github@akbarali.uz"
+    }
+  ],
+  "require":{
+    "php":">=8.0",
+    "illuminate/support":">=7",
+    "illuminate/database":">=7"
+  },
+  "require-dev":{
+    "roave/security-advisories":"dev-latest"
+  }
+}
