@@ -99,6 +99,17 @@ abstract class DataObjectBase implements DataObjectContract
     }
 
     /**
+     * @param string $json
+     * @return static
+     * @throws \JsonException
+     */
+    public static function createFromJson(string $json): static
+    {
+        return new static(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+    }
+
+
+    /**
      * @param bool $trim_nulls
      * @return array
      */
