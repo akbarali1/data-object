@@ -43,11 +43,9 @@ abstract class DataObjectBase implements DataObjectContract
                 $value = ($parameters[$field] ?? $parameters[Str::snake($field)] ?? $validator->getDefaultValue() ?? null);
                 if ($validator->getType() instanceof ReflectionUnionType) {
                     $types = $validator->getType()->getTypes();
-                    if ($types !== null && !is_null($value) && count($types) === 2 && $types[1]->getName() === 'array') {
+                    if (!is_null($types) && !is_null($value) && count($types) === 2 && $types[1]->getName() === 'array') {
                         $dataObjectName = $types[0]->getName();
-                        $value          = array_map(static function ($item) use ($dataObjectName) {
-                            return new $dataObjectName($item);
-                        }, $value);
+                        $value          = array_map(static fn($item) => new $dataObjectName($item), $value);
                     } else {
                         $value = [];
                     }
@@ -139,5 +137,46 @@ abstract class DataObjectBase implements DataObjectContract
         }
 
         return $data;
+    }
+
+    /**
+     * @param bool $trim_nulls
+     * @return array
+     */
+    public function toSnakeArray(bool $trim_nulls = false): array
+    {
+        $data = [];
+
+        try {
+            $class = new \ReflectionClass(static::class);
+
+            $properties = $class->getProperties(\ReflectionProperty::IS_PUBLIC);
+            foreach ($properties as $reflectionProperty) {
+                if ($reflectionProperty->isStatic()) {
+                    continue;
+                }
+                $value = $reflectionProperty->getValue($this);
+                if ($trim_nulls === true) {
+                    if (!is_null($value)) {
+                        $data[Str::snake($reflectionProperty->getName())] = $value;
+                    }
+                } else {
+                    $data[Str::snake($reflectionProperty->getName())] = $value;
+                }
+            }
+        } catch (\Exception $exception) {
+
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param bool $trim_nulls
+     * @return array
+     */
+    public function all(bool $trim_nulls = false): array
+    {
+        return $this->toArray($trim_nulls);
     }
 }

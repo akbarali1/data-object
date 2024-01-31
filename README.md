@@ -25,7 +25,7 @@ $object = DataObj::createFromJson('{"key1":"value1","key2":"value2"}');
 
 Avval DataObjectlar yaratib olamiz `StoreData`
 ```php
-class StoreData extends /Akbarali/DataObject/DataObjectBase
+class StoreData extends \Akbarali\DataObject\DataObjectBase
 {
     public ?string $id;
     public ?int    $user_id;
@@ -42,7 +42,7 @@ class StoreData extends /Akbarali/DataObject/DataObjectBase
 ```
 `UserData`
 ```php
-class UserData extends /Akbarali/DataObject/DataObjectBase
+class UserData extends \Akbarali\DataObject\DataObjectBase
 {
     public ?int    $id;
     public ?string $name;
@@ -58,7 +58,7 @@ class UserData extends /Akbarali/DataObject/DataObjectBase
 ```
 `RoleData`
 ```php
-class RoleData extends /Akbarali/DataObject/DataObjectBase
+class RoleData extends \Akbarali\DataObject\DataObjectBase
 {
     public int    $id;
     public string $name;
@@ -78,7 +78,7 @@ Laravelda relationlar birga ko'p bo'lsa qanday ishlatish kerak?
 
 ProductData
 ```php
-ProductData extends /Akbarali/DataObject/DataObjectBase
+ProductData extends \Akbarali\DataObject\DataObjectBase
 {
     public ?int    $id;
     public ?string $name;
@@ -90,7 +90,7 @@ ProductData extends /Akbarali/DataObject/DataObjectBase
 ```
 StoreData
 ```php
-StoreData extends /Akbarali/DataObject/DataObjectBase
+StoreData extends \Akbarali\DataObject\DataObjectBase
 {
     public ?int    $id;
     public ?string $name;
@@ -106,4 +106,15 @@ StoreData extends /Akbarali/DataObject/DataObjectBase
 ```php
 $store = Store::query()->with(['products'])->find(1);
 $storeData = StoreData::createFromEloquentModel($store);
+```
+
+# DataObjectni arrayga aylantirish
+```php
+$storeData->toArray();
+//yoki
+$storeData->all(true);
+```
+# DataObjectni SnakCasega aylantirish
+```php
+$storeData->toSnakeCase();
 ```
