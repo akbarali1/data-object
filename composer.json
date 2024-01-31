@@ -1,6 +1,14 @@
 {
   "name":"akbarali/data-object",
-  "description":"Data Object PHP",
+  "version":"1.0",
+  "description":"Data Object PHP Laravel",
+  "license":"MIT",
+  "minimum-stability":"stable",
+  "type":"library",
+  "keywords":[
+    "php",
+    "laravel"
+  ],
   "autoload":{
     "psr-4":{
       "Akbarali\\DataObject\\":"src/"
@@ -9,7 +17,8 @@
   "authors":[
     {
       "name":"Akbarali",
-      "email":"github@akbarali.uz"
+      "email":"github@akbarali.uz",
+      "homepage":"https://github.com/akbarali1"
     }
   ],
   "require":{
