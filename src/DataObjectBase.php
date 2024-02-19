@@ -53,6 +53,9 @@ abstract class DataObjectBase implements DataObjectContract
                     $dataObject = $validator->getType()->getName();
                     $value      = new $dataObject($value);
                 } elseif (!is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
+                    $newClass = $validator->getType()->getName();
+                    $value    = new $newClass($value);
+                } else {
                     $value = null;
                 }
 
