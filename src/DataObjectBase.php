@@ -28,17 +28,19 @@ abstract class DataObjectBase implements DataObjectContract
     {
         $this->_parameters = $parameters;
         try {
-
-            $class  = new \ReflectionClass(static::class);
-            $fields = [];
-
-            foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $reflectionProperty) {
-                if ($reflectionProperty->isStatic()) {
-                    continue;
+            $fields = DOCache::resolve(static::class, static function () {
+                $class  = new \ReflectionClass(static::class);
+                $fields = [];
+                foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $reflectionProperty) {
+                    if ($reflectionProperty->isStatic()) {
+                        continue;
+                    }
+                    $field          = $reflectionProperty->getName();
+                    $fields[$field] = $reflectionProperty;
                 }
-                $field          = $reflectionProperty->getName();
-                $fields[$field] = $reflectionProperty;
-            }
+
+                return $fields;
+            });
             foreach ($fields as $field => $validator) {
                 $value = ($parameters[$field] ?? $parameters[Str::snake($field)] ?? $validator->getDefaultValue() ?? null);
                 if ($validator->getType() instanceof ReflectionUnionType) {
