@@ -118,3 +118,18 @@ $storeData->all(true);
 ```php
 $storeData->toSnakeCase();
 ```
+
+
+Modelda `created_at` odatda `use Illuminate\Support\Carbon;` bo'ladi. Siz `created_at` ham `Carbon` holatida o'tkazsangiz bo'ladi.
+```php
+use Illuminate\Support\Carbon;
+
+ProductData extends \Akbarali\DataObject\DataObjectBase
+{
+    public int    $id;
+    public string $name;
+    public string $description;
+    public string $image;
+    public bool   $status;
+    public Carbon $created_at;
+}
