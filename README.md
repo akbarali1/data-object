@@ -108,19 +108,17 @@ $store = Store::query()->with(['products'])->find(1);
 $storeData = StoreData::createFromEloquentModel($store);
 ```
 
-# DataObjectni arrayga aylantirish
+# DataObject To array
 ```php
 $storeData->toArray();
-//yoki
+//or
 $storeData->all(true);
 ```
-# DataObjectni SnakCasega aylantirish
+# DataObjec To SnakCase
 ```php
 $storeData->toSnakeCase();
 ```
-
-
-Modelda `created_at` odatda `use Illuminate\Support\Carbon;` bo'ladi. Siz `created_at` ham `Carbon` holatida o'tkazsangiz bo'ladi.
+In a model, `created_at` is usually `use Illuminate\Support\Carbon;`. You can also pass `created_at` to `Carbon`.
 ```php
 use Illuminate\Support\Carbon;
 
