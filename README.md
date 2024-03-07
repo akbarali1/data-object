@@ -65,18 +65,15 @@ class RoleData extends \Akbarali\DataObject\DataObjectBase
     public string $slug;
     public string $created_at;
 }
-
 ```
-Endi modeldan obyekt yaratib olamiz
 ```php
 $store = Store::query()->with(['user.role'])->find(1);
 $storeData = StoreData::createFromEloquentModel($store);
 ```
-Eslatma: Relationni ham DataObjectga o'girmoqchi bo'lsangiz modelga realiton ochib o'sha relationni with olishingiz kerak. Shunda U ham data objectga o'giriladi
+Note: If you want to turn the relation into a DataObject, you should open a realton to the model and get that relation with. Then U is also converted to data object
 
-# Laravelda relationlar birga ko'p bo'lsa qanday ishlatish kerak?
-
-ProductData
+# Laravel Relation HasMany
+`ProductData`
 ```php
 ProductData extends \Akbarali\DataObject\DataObjectBase
 {
@@ -88,7 +85,7 @@ ProductData extends \Akbarali\DataObject\DataObjectBase
     public ?string $created_at;
 }
 ```
-StoreData
+`StoreData`
 ```php
 StoreData extends \Akbarali\DataObject\DataObjectBase
 {
@@ -102,7 +99,6 @@ StoreData extends \Akbarali\DataObject\DataObjectBase
     public array|ProductData $products;
 }
 ```
-
 ```php
 $store = Store::query()->with(['products'])->find(1);
 $storeData = StoreData::createFromEloquentModel($store);
