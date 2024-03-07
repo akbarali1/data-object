@@ -4,26 +4,26 @@ composer require akbarali/data-object
 ```
 
 # USAGE
-PHP Array
+Array create Data Object
 ```php
 $object = DataObj::createFromArray([
     'key1' => 'value1',
     'key2' => 'value2',
 ]);
 ```
-Laravel model
+Laravel model create Data Object
 ```php
 $model = User::query()->find(1);
 $object = DataObj::createFromEloquentModel($model);
 ```
-Json
+Json create Data Object
 ```php
 $object = DataObj::createFromJson('{"key1":"value1","key2":"value2"}');
 ```
 
 # Laravel Raltionlarda ishlatish
 
-Avval DataObjectlar yaratib olamiz `StoreData`
+Create `StoreData`
 ```php
 class StoreData extends \Akbarali\DataObject\DataObjectBase
 {
