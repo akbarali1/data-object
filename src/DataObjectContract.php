@@ -30,4 +30,23 @@ interface DataObjectContract
      */
     public static function createFromArray(array $model): static;
 
+    /**
+     * @param bool $trim_nulls
+     * @return array
+     */
+    public function toSnakeArray(bool $trim_nulls = false): array;
+
+    /**
+     * @param bool $trim_nulls
+     * @return array
+     */
+    public function toArray(bool $trim_nulls = false): array;
+
+    /**
+     * @param bool $trim_nulls
+     * @return array
+     */
+    public function all(bool $trim_nulls = false): array;
+
+
 }

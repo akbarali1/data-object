@@ -20,57 +20,6 @@ use ReflectionUnionType;
 abstract class DataObjectBase implements DataObjectContract
 {
     /**
-     * @var array $_parameters
-     */
-    protected array $_parameters = [];
-
-    public function __construct(array $parameters = [])
-    {
-        $this->_parameters = $parameters;
-        try {
-            $fields = DOCache::resolve(static::class, static function () {
-                $class  = new \ReflectionClass(static::class);
-                $fields = [];
-                foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $reflectionProperty) {
-                    if ($reflectionProperty->isStatic()) {
-                        continue;
-                    }
-                    $field          = $reflectionProperty->getName();
-                    $fields[$field] = $reflectionProperty;
-                }
-
-                return $fields;
-            });
-            foreach ($fields as $field => $validator) {
-                $value = ($parameters[$field] ?? $parameters[Str::snake($field)] ?? $validator->getDefaultValue() ?? null);
-                if ($validator->getType() instanceof ReflectionUnionType) {
-                    $types = $validator->getType()->getTypes();
-                    if (!is_null($types) && !is_null($value) && count($types) === 2 && $types[1]->getName() === 'array') {
-                        $dataObjectName = $types[0]->getName();
-                        $value          = array_map(static fn($item) => new $dataObjectName($item), $value);
-                    } else {
-                        $value = [];
-                    }
-                } elseif (is_array($value) && count($value) > 0 && !is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
-                    $dataObject = $validator->getType()->getName();
-                    $value      = new $dataObject($value);
-                } elseif (!is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
-                    $newClass = $validator->getType()->getName();
-                    $value    = new $newClass($value);
-                }
-
-                $this->{$field} = $value;
-                unset($parameters[$field]);
-            }
-            $this->prepare();
-        } catch (\Exception $exception) {
-
-        }
-    }
-
-    protected function prepare(): void {}
-
-    /**
      * @param array $parameters
      * @param       $field
      * @param       $defaultValue
@@ -82,21 +31,59 @@ abstract class DataObjectBase implements DataObjectContract
     }
 
     /**
-     * @param Model $model
-     * @return static
-     */
-    public static function createFromEloquentModel(Model $model): static
-    {
-        return new static($model->toArray());
-    }
-
-    /**
      * @param array $model
      * @return static
      */
     public static function createFromArray(array $model): static
     {
-        return new static($model);
+        $fields = DOCache::resolve(static::class, static function () {
+            $class  = new \ReflectionClass(static::class);
+            $fields = [];
+            foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $reflectionProperty) {
+                if ($reflectionProperty->isStatic()) {
+                    continue;
+                }
+                $field          = $reflectionProperty->getName();
+                $fields[$field] = $reflectionProperty;
+            }
+
+            return $fields;
+        });
+        $class  = new static();
+        /** @var array|\ReflectionProperty[] $fields */
+        foreach ($fields as $field => $validator) {
+            $value = ($model[$field] ?? $model[Str::snake($field)] ?? $validator->getDefaultValue() ?? null);
+            if ($validator->getType() instanceof ReflectionUnionType) {
+                $types = $validator->getType()->getTypes();
+                if (!is_null($types) && !is_null($value) && count($types) === 2 && $types[1]->getName() === 'array') {
+                    $dataObjectName = $types[0]->getName();
+                    $value          = array_map(static fn($item) => new $dataObjectName($item), $value);
+                } else {
+                    $value = [];
+                }
+            } elseif (is_array($value) && count($value) > 0 && !is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
+                $dataObject = $validator->getType()->getName();
+                $value      = new $dataObject($value);
+            } elseif (!is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
+                $newClass = $validator->getType()->getName();
+                $value    = new $newClass($value);
+            }
+            //if (version_compare(PHP_VERSION, '8.1.0', '<')) {
+            $validator->setAccessible(true);
+            //}
+            $validator->setValue($class, $value);
+        }
+
+        return $class;
+    }
+
+    /**
+     * @param Model $model
+     * @return static
+     */
+    public static function createFromEloquentModel(Model $model): static
+    {
+        return self::createFromArray($model->toArray());
     }
 
     /**
@@ -106,9 +93,8 @@ abstract class DataObjectBase implements DataObjectContract
      */
     public static function createFromJson(string $json): static
     {
-        return new static(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+        return self::createFromArray(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
-
 
     /**
      * @param bool $trim_nulls
@@ -117,10 +103,8 @@ abstract class DataObjectBase implements DataObjectContract
     public function toArray(bool $trim_nulls = false): array
     {
         $data = [];
-
         try {
-            $class = new \ReflectionClass(static::class);
-
+            $class      = new \ReflectionClass(static::class);
             $properties = $class->getProperties(\ReflectionProperty::IS_PUBLIC);
             foreach ($properties as $reflectionProperty) {
                 if ($reflectionProperty->isStatic()) {
@@ -149,10 +133,8 @@ abstract class DataObjectBase implements DataObjectContract
     public function toSnakeArray(bool $trim_nulls = false): array
     {
         $data = [];
-
         try {
-            $class = new \ReflectionClass(static::class);
-
+            $class      = new \ReflectionClass(static::class);
             $properties = $class->getProperties(\ReflectionProperty::IS_PUBLIC);
             foreach ($properties as $reflectionProperty) {
                 if ($reflectionProperty->isStatic()) {
