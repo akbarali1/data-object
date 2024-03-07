@@ -19,6 +19,7 @@ use ReflectionUnionType;
  */
 abstract class DataObjectBase implements DataObjectContract
 {
+
     /**
      * @param array $parameters
      * @param       $field
@@ -55,22 +56,29 @@ abstract class DataObjectBase implements DataObjectContract
             $value = ($model[$field] ?? $model[Str::snake($field)] ?? $validator->getDefaultValue() ?? null);
             if ($validator->getType() instanceof ReflectionUnionType) {
                 $types = $validator->getType()->getTypes();
+                //array data objectlardan tashkil topgan bo`lsa
                 if (!is_null($types) && !is_null($value) && count($types) === 2 && $types[1]->getName() === 'array') {
                     $dataObjectName = $types[0]->getName();
-                    $value          = array_map(static fn($item) => new $dataObjectName($item), $value);
+                    if (class_exists($dataObjectName) && new $dataObjectName instanceof DataObjectBase) {
+                        $value = array_map(static fn($item) => $dataObjectName::createFromArray($item), $value);
+                    }
                 } else {
                     $value = [];
                 }
-            } elseif (is_array($value) && count($value) > 0 && !is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
+                //DataObjectBase classdan tashkil topgan bo`lsa
+            } elseif (is_array($value) && !is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
                 $dataObject = $validator->getType()->getName();
-                $value      = new $dataObject($value);
+                if (class_exists($dataObject) && new $dataObject instanceof DataObjectBase) {
+                    $value = $dataObject::createFromArray($value);
+                }
             } elseif (!is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
-                $newClass = $validator->getType()->getName();
-                $value    = new $newClass($value);
+                $dataObject = $validator->getType()->getName();
+                if (class_exists($dataObject) && !(new $dataObject instanceof DataObjectBase)) {
+                    $newClass = $validator->getType()->getName();
+                    $value    = new $newClass($value);
+                }
             }
-            //if (version_compare(PHP_VERSION, '8.1.0', '<')) {
             $validator->setAccessible(true);
-            //}
             $validator->setValue($class, $value);
         }
 
