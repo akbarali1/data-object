@@ -21,7 +21,7 @@ Json create Data Object
 $object = DataObj::createFromJson('{"key1":"value1","key2":"value2"}');
 ```
 
-# Laravel Raltionlarda ishlatish
+# Laravel Relation BelongsTo or HasOne
 
 Create `StoreData`
 ```php
@@ -138,7 +138,7 @@ class ClientData extends \Akbarali\DataObject\DataObjectBase
 ```
 ```php
 $object = DataObj::createFromArray([
-    'id' => 1,
+    'id'        => 1,
     'full_name' => 'Akbarali',
 ]);
 $object->id = 2;
