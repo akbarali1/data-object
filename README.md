@@ -74,7 +74,7 @@ $storeData = StoreData::createFromEloquentModel($store);
 ```
 Eslatma: Relationni ham DataObjectga o'girmoqchi bo'lsangiz modelga realiton ochib o'sha relationni with olishingiz kerak. Shunda U ham data objectga o'giriladi
 
-Laravelda relationlar birga ko'p bo'lsa qanday ishlatish kerak?
+# Laravelda relationlar birga ko'p bo'lsa qanday ishlatish kerak?
 
 ProductData
 ```php
