@@ -147,6 +147,6 @@ $object = DataObj::createFromArray([
     'id' => 1,
     'full_name' => 'Akbarali',
 ]);
-```
 $object->id = 2;
+```
 **Error: Cannot modify readonly property App\DataObjects\HistoryData::$id**
