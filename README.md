@@ -133,7 +133,7 @@ ProductData extends \Akbarali\DataObject\DataObjectBase
     public bool   $status;
     public Carbon $created_at;
 }
-
+```
 # 2.0 version supported Readonly Properties
 ```php
 class ClientData extends \Akbarali\DataObject\DataObjectBase
