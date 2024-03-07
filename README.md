@@ -133,3 +133,20 @@ ProductData extends \Akbarali\DataObject\DataObjectBase
     public bool   $status;
     public Carbon $created_at;
 }
+
+# 2.0 version supported Readonly Properties
+```php
+class ClientData extends \Akbarali\DataObject\DataObjectBase
+{
+    public readonly int $id;
+    public string       $full_name;
+}
+```
+```php
+$object = DataObj::createFromArray([
+    'id' => 1,
+    'full_name' => 'Akbarali',
+]);
+```
+$object->id = 2;
+**Error: Cannot modify readonly property App\DataObjects\HistoryData::$id**
