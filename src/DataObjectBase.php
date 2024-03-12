@@ -104,6 +104,35 @@ abstract class DataObjectBase implements DataObjectContract
         return self::createFromArray(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
+
+    /**
+     * @param Model $model
+     * @return static
+     */
+    public static function fromModel(Model $model): static
+    {
+        return self::createFromArray($model->toArray());
+    }
+
+    /**
+     * @param array $model
+     * @return static
+     */
+    public static function fromArray(array $model): static
+    {
+        return self::createFromArray($model);
+    }
+
+    /**
+     * @param string $json
+     * @return static
+     * @throws \JsonException
+     */
+    public static function fromJson(string $json): static
+    {
+        return self::createFromJson($json);
+    }
+
     /**
      * @param bool $trim_nulls
      * @return array

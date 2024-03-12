@@ -102,6 +102,8 @@ StoreData extends \Akbarali\DataObject\DataObjectBase
 ```php
 $store = Store::query()->with(['products'])->find(1);
 $storeData = StoreData::createFromEloquentModel($store);
+//or
+$storeData = StoreData::fromModel($store);
 ```
 
 # DataObject To array
@@ -144,3 +146,6 @@ $object = DataObj::createFromArray([
 $object->id = 2;
 ```
 **Error: Cannot modify readonly property App\DataObjects\HistoryData::$id**
+
+# 2.1 version 
+Adding: `fromModel` `fromJson` `fromArray`
