@@ -201,4 +201,18 @@ abstract class DataObjectBase implements DataObjectContract
     {
         return $this->toArray($trim_nulls);
     }
+
+    public static function arrayToClassProperty(array $array): string
+    {
+        $string = '';
+        foreach ($array as $key => $value) {
+            $type = is_int($value) ? 'int' : (is_float($value) ? 'float' : (is_string($value) ? 'string' : '?string'));
+            if (str_contains($key, 'id')) {
+                $type = 'readonly int';
+            }
+            $string .= 'public '.$type.' $'.$key.';';
+        }
+
+        return $string;
+    }
 }
