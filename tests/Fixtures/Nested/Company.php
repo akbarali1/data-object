@@ -7,15 +7,9 @@ use Akbarali\DataObject\DataObjectBase;
 
 class Company extends DataObjectBase
 {
-    public $title;
+    public string $title;
 
     /** @var array<\Tests\Fixtures\Nested\Project> */
-    public $projects;
+    public array $projects;
 
-    protected function castProjects(array $projects): array
-    {
-        return array_map(static function (array $project) {
-            return Project::fromArray($project);
-        }, $projects);
-    }
 }

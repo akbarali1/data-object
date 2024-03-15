@@ -8,11 +8,11 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
-    protected $foo = 'Foo';
+    protected string $foo = 'Foo';
 
-    protected $bar = 'Bar';
+    protected string $bar = 'Bar';
 
-    protected $baz = 'Baz';
+    protected string $baz = 'Baz';
 
-    protected $baq = 'Baq';
+    protected string $baq = 'Baq';
 }

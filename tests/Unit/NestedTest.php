@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 namespace Tests\Unit;
@@ -9,7 +8,7 @@ use Tests\TestCase;
 
 class NestedTest extends TestCase
 {
-    protected $values = [
+    protected array $values = [
         'title' => 'First Company',
 
         'projects' => [
@@ -38,6 +37,7 @@ class NestedTest extends TestCase
     public function testCasting(): void
     {
         $object = Company::fromArray($this->values);
+        die(print_r($object->projects[0]));
 
         $this->assertSame('First Company', $object->title);
 

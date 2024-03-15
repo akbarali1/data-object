@@ -7,23 +7,23 @@ use Akbarali\DataObject\DataObjectBase;
 
 class Simple extends DataObjectBase
 {
-    public $foo;
+    public string $foo;
 
-    protected $bar;
+    protected string $bar;
 
-    private $baz;
+    private string $baz;
 
-    public function getFoo()
+    public function getFoo(): string
     {
         return $this->foo;
     }
 
-    public function getBar()
+    public function getBar(): string
     {
         return $this->bar;
     }
 
-    public function getBaz()
+    public function getBaz(): string
     {
         return $this->baz;
     }

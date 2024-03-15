@@ -9,7 +9,7 @@ use Tests\TestCase;
 
 class SimpleTest extends TestCase
 {
-    public function testMake()
+    public function testMake(): void
     {
         $object = Simple::fromArray([
             'foo' => $this->foo,
@@ -25,7 +25,7 @@ class SimpleTest extends TestCase
         $this->assertNull($object->getBaz());
     }
 
-    public function testConstruct()
+    public function testConstruct(): void
     {
         $object = Simple::fromArray([
             'foo' => $this->foo,
@@ -41,7 +41,7 @@ class SimpleTest extends TestCase
         $this->assertNull($object->getBaz());
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $object = Simple::fromArray([
             'foo' => $this->foo,
