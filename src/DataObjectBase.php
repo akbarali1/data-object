@@ -19,6 +19,7 @@ use ReflectionUnionType;
  */
 abstract class DataObjectBase implements DataObjectContract
 {
+    protected array $_parameters = [];
 
     /**
      * @param array $parameters
@@ -50,10 +51,12 @@ abstract class DataObjectBase implements DataObjectContract
 
             return $fields;
         });
-        $class  = new static();
+
+        $class              = new static();
+        $class->_parameters = $model;
         /** @var array|\ReflectionProperty[] $fields */
         foreach ($fields as $field => $validator) {
-            $value = ($model[$field] ?? $model[Str::snake($field)] ?? $validator->getDefaultValue() ?? null);
+            $value = ($class->_parameters[$field] ?? $class->_parameters[Str::snake($field)] ?? $validator->getDefaultValue() ?? null);
             if ($validator->getType() instanceof ReflectionUnionType) {
                 $types = $validator->getType()->getTypes();
                 //array data objectlardan tashkil topgan bo`lsa
