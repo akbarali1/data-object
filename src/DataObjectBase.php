@@ -144,6 +144,7 @@ abstract class DataObjectBase implements DataObjectContract
     {
         $data = [];
         try {
+            //TODO: Bunga ham DOCache qo`shish kerak
             $class      = new \ReflectionClass(static::class);
             $properties = $class->getProperties(\ReflectionProperty::IS_PUBLIC);
             foreach ($properties as $reflectionProperty) {
@@ -172,6 +173,7 @@ abstract class DataObjectBase implements DataObjectContract
      */
     public function toSnakeArray(bool $trim_nulls = false): array
     {
+        //TODO: Bunga ham DOCache qo`shish kerak
         $data = [];
         try {
             $class      = new \ReflectionClass(static::class);
