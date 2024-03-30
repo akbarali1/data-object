@@ -173,7 +173,6 @@ abstract class DataObjectBase implements DataObjectContract
      */
     public function toSnakeArray(bool $trim_nulls = false): array
     {
-        //TODO: Bunga ham DOCache qo`shish kerak
         $data = [];
         try {
             $class      = new \ReflectionClass(static::class);

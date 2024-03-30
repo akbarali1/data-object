@@ -19,10 +19,7 @@ use Illuminate\Support\Collection;
 class DataObjectCollection
 {
 
-    /**
-     * @var Collection
-     */
-    public Collection $items;
+    public Collection|\Illuminate\Database\Eloquent\Collection $items;
     public int        $totalCount;
     public int        $limit;
     public int        $page;
