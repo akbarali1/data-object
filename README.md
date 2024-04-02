@@ -204,3 +204,7 @@ $object = ClientData::arrayToClassProperty([
 ```
 
 Return string: `public readonly int $id;public string $full_name;`
+
+# 2.5 version
+
+`createProperty` method added to create a property return string and bug fix `arrayToClassProperty`

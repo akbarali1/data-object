@@ -206,39 +206,52 @@ abstract class DataObjectBase implements DataObjectContract
         return $this->toArray($trim_nulls);
     }
 
-    public static function arrayToClassProperty(array $array): string
+    public static function arrayToClassProperty(array $array, bool $camelCase = false): string
     {
         $string = '';
         foreach ($array as $key => $value) {
-            $type = is_int($value) ? 'int' : (is_float($value) ? 'float' : (is_string($value) ? 'string' : '?string'));
+            $type = match (gettype($value)) {
+                'integer' => 'int',
+                'double'  => 'float',
+                'string'  => 'string',
+                'array'   => 'array',
+                default   => '?string',
+            };
             if (str_contains($key, 'id')) {
                 $type = 'readonly int';
             }
-            $string .= 'public '.$type.' $'.$key.';';
+            $key    = $camelCase ? Str::camel($key) : $key;
+            $string .= 'public '.$type.' $'.$key.';'.PHP_EOL;
         }
 
         return $string;
     }
 
-    public static function createProperty(mixed $model)
+    /**
+     * @param mixed $model
+     * @param bool  $camelCase
+     * @return string
+     * @throws DataObjectException
+     */
+    public static function createProperty(mixed $model, bool $camelCase = false): string
     {
         if (is_array($model)) {
-            return self::arrayToClassProperty($model);
+            return self::arrayToClassProperty($model, $camelCase);
         }
 
         if ($model instanceof Model) {
-            return self::arrayToClassProperty($model->toArray());
+            return self::arrayToClassProperty($model->toArray(), $camelCase);
         }
 
         if (is_object($model) && method_exists($model, 'first') && method_exists($model, 'toArray')) {
-            return self::arrayToClassProperty($model->first()->toArray());
+            return self::arrayToClassProperty($model->first()->toArray(), $camelCase);
         }
 
         if (is_object($model) && method_exists($model, 'toArray')) {
-            return self::arrayToClassProperty($model->toArray());
+            return self::arrayToClassProperty($model->toArray(), $camelCase);
         }
 
-        throw new \Exception('Invalid model type');
+        throw new DataObjectException('Invalid model type', DataObjectException::INVALID_MODEL_TYPE);
     }
 
     /*public static function savePropertyToFile(mixed $model): string
@@ -250,7 +263,6 @@ abstract class DataObjectBase implements DataObjectContract
         $content       = str_replace('}', $allProperties."\n}", $content);
         fwrite($file, $content);
         fclose($file);
-
         return 'Properties added successfully';
     }*/
 }
