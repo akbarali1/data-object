@@ -219,4 +219,38 @@ abstract class DataObjectBase implements DataObjectContract
 
         return $string;
     }
+
+    public static function createProperty(mixed $model)
+    {
+        if (is_array($model)) {
+            return self::arrayToClassProperty($model);
+        }
+
+        if ($model instanceof Model) {
+            return self::arrayToClassProperty($model->toArray());
+        }
+
+        if (is_object($model) && method_exists($model, 'first') && method_exists($model, 'toArray')) {
+            return self::arrayToClassProperty($model->first()->toArray());
+        }
+
+        if (is_object($model) && method_exists($model, 'toArray')) {
+            return self::arrayToClassProperty($model->toArray());
+        }
+
+        throw new \Exception('Invalid model type');
+    }
+
+    /*public static function savePropertyToFile(mixed $model): string
+    {
+        $allProperties = self::createProperty($model);
+        $class         = new \ReflectionClass(static::class);
+        $file          = fopen($class->getFileName(), 'r+');
+        $content       = fread($file, filesize($class->getFileName()));
+        $content       = str_replace('}', $allProperties."\n}", $content);
+        fwrite($file, $content);
+        fclose($file);
+
+        return 'Properties added successfully';
+    }*/
 }

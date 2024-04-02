@@ -4,6 +4,13 @@
 composer require akbarali/data-object
 ```
 
+# TODO
+
+| Done ?               | Name                                                               | Version       |
+|:---------------------|:-------------------------------------------------------------------|:--------------|
+| :white_check_mark:   | Add `createProperty`                                               | 2.5 version   |
+| :white_large_square: | Add command to create `DataObject` via `Eloquent Model` or `Array` | In the future |
+
 # USAGE
 
 Array create Data Object
