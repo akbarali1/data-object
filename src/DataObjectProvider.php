@@ -2,10 +2,9 @@
 
 namespace Akbarali\DataObject;
 
-use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 
-class DataObjectServiceProvider extends ServiceProvider implements DeferrableProvider
+class DataObjectProvider extends ServiceProvider
 {
     /**
      * Bootstrap the application events.
@@ -14,7 +13,11 @@ class DataObjectServiceProvider extends ServiceProvider implements DeferrablePro
      */
     public function boot(): void
     {
-        $this->commands('command.do.create');
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                Console\CreateDataObject::class,
+            ]);
+        }
     }
 
 }
