@@ -1,0 +1,19 @@
+<?php
+
+namespace {{ namespace }};
+
+use App\ActionData\ActionDataBase;
+use Illuminate\Validation\Rule;
+
+/**
+ * Created by Console ActionData
+ * Filename: {{ class }}.php
+ */
+class {{ class }} extends ActionDataBase
+{
+    {{ property }}
+    protected function prepare(): void
+    {
+        $this->rules = {{ rules }};
+    }
+}

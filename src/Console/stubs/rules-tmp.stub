@@ -1,0 +1,4 @@
+<?php
+use Illuminate\Validation\Rule;
+
+return {{ rules }};
