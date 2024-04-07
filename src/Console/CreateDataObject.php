@@ -47,10 +47,10 @@ class CreateDataObject extends DatabaseInspectionCommand
         //'studly' => 'StudlyCase',
     ];
     private array        $createDataObjectTypes = [
-        'tables'        => 'Tables',
-        'models'        => 'Models',
-        'tables_search' => 'Tables Search',
-        'models_search' => 'Models Search',
+        'tables'      => 'Tables',
+        'tableSearch' => 'Tables Search',
+        'models'      => 'Models',
+        'modelSearch' => 'Models Search',
     ];
     protected Filesystem $files;
 
@@ -84,10 +84,10 @@ class CreateDataObject extends DatabaseInspectionCommand
         }
 
         $tableName = match ($name) {
-            'tables'        => $this->tables(),
-            'models'        => $this->models(),
-            'tables_search' => $this->searchTables(),
-            'models_search' => $this->searchModels(),
+            'tables'      => $this->tables(),
+            'models'      => $this->models(),
+            'tableSearch' => $this->searchTables(),
+            'modelSearch' => $this->searchModels(),
         };
 
         $this->createDataObject($tableName);
