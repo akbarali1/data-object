@@ -232,3 +232,9 @@ Search Model and create DataObject
 ```
  php artisan do:create modelSearch
 ```
+```
+php artisan do:create --model="App\Models\QQB\User"
+```
+```
+php artisan do:create --table="users"
+```
