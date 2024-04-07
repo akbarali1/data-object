@@ -214,6 +214,19 @@ Return string: `public readonly int $id;public string $full_name;`
 
 # 2.6.2 version
 
+Add command create DataObject
+
+Install
+
+Add `DataObjectProvider` to `/config/app.php` `providers`
+
+```php
+'providers' => [
+...
+\Akbarali\DataObject\DataObjectProvider::class,
+]
+```
+
 DataObject create console command
 
 ```
