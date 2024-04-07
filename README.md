@@ -6,10 +6,11 @@ composer require akbarali/data-object
 
 # TODO
 
-| Done ?             | Name                                                                                    | Version |
-|:-------------------|:----------------------------------------------------------------------------------------|:--------|
-| :white_check_mark: | Add `createProperty`                                                                    | 2.5     |
-| :white_check_mark: | Add command to create `DataObject` via `Eloquent Model` or `Array` or `Database Tables` | 2.6.5   |
+| Done ?               | Name                                                                         | Version       |
+|:---------------------|:-----------------------------------------------------------------------------|:--------------|
+| :white_check_mark:   | Add `createProperty`                                                         | 2.5           |
+| :white_check_mark:   | Add command to create `DataObject` via `Eloquent Model` or `Database Tables` | 2.6.5         |
+| :white_large_square: | Add command to create `DataObject` via PHP `Array`                           | In the future |
 
 # USAGE
 
