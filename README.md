@@ -163,7 +163,9 @@ ProductData extends \Akbarali\DataObject\DataObjectBase
 }
 ```
 
-# 2.0 version supported Readonly Properties
+# 2.0 version
+
+Supported Readonly Properties
 
 ```php
 class ClientData extends \Akbarali\DataObject\DataObjectBase
