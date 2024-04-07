@@ -11,6 +11,8 @@ use Illuminate\Database\Console\DatabaseInspectionCommand;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Input\InputArgument;
+use Symfony\Component\Console\Input\InputOption;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
@@ -22,19 +24,11 @@ use function Laravel\Prompts\pause;
 class CreateDataObject extends DatabaseInspectionCommand
 {
     #region Properties
-    protected $signature = 'do:create
-                            {type? : The type of the data object}
-                            {--database= : The database connection}
-                            {--model : The name of the model}
-                            {--table : Output the table information as JSON}';
-
-
     protected        $description = 'Create new Data Object';
     protected string $type        = 'DataObject';
 
-    protected int $scrollSize = 15;
-    protected     $name;
-
+    protected int        $scrollSize            = 15;
+    protected            $name                  = 'do:create';
     protected            $connection;
     protected            $schema;
     protected string     $fullPath;
@@ -73,8 +67,24 @@ class CreateDataObject extends DatabaseInspectionCommand
 
         $this->connection = $connections->connection($this->input->getOption('database'));
         $this->schema     = $this->connection->getDoctrineSchemaManager();
-
         $this->registerTypeMappings($this->connection->getDoctrineConnection()->getDatabasePlatform());
+
+        $table = $this->option('table');
+        if (isset($table)) {
+            $this->createDataObject($table);
+
+            return 0;
+        }
+
+        $model = $this->option('model');
+        if (isset($model)) {
+            //"app/Models/QQB/QQBAdditionalCardModel.php"
+            //            dd($model);
+            $this->createDataObject($this->modelCheck($model));
+
+            return 0;
+        }
+
         $name = $this->argument('type') ?: select('Data Object yaratish turini tanlang', $this->createDataObjectTypes);
 
         if (!array_key_exists($name, $this->createDataObjectTypes)) {
@@ -106,19 +116,8 @@ class CreateDataObject extends DatabaseInspectionCommand
         );
         $modelName = 'App\Models\\'.$select;
 
-        if (is_dir(app_path('Models/'.$select))) {
-            $this->components->warn(sprintf("Model [%s] is a directory.", $modelName));
+        return $this->modelCheck($modelName);
 
-            return $this->models();
-        }
-
-        if (!class_exists($modelName)) {
-            $this->components->warn(sprintf("Model [%s] not found.", $modelName));
-
-            return $this->models();
-        }
-
-        return (new $modelName())->getTable();
     }
 
     protected function searchModels()
@@ -132,13 +131,19 @@ class CreateDataObject extends DatabaseInspectionCommand
 
         $modelName = 'App\Models\\'.$select;
 
-        if (is_dir(app_path('Models/'.$select))) {
-            $this->components->warn(sprintf("Model [%s] is a directory.", $modelName));
+        return $this->modelCheck($modelName);
+    }
+
+    private function modelCheck(string $modelName)
+    {
+        if (is_dir(app_path('Models/'.str_replace('App\Models\\', '', $modelName)))) {
+            $this->components->error(sprintf("Model [%s] is a directory.", $modelName));
 
             return $this->models();
         }
+
         if (!class_exists($modelName)) {
-            $this->components->warn(sprintf("Model [%s] not found.", $modelName));
+            $this->components->error(sprintf("Model [%s] not found.", $modelName));
 
             return $this->models();
         }
@@ -343,7 +348,7 @@ class CreateDataObject extends DatabaseInspectionCommand
             "decimal", "float"       => "float",
             'string', 'text', 'uuid' => 'string',
             'boolean'                => 'bool',
-            'datetime', 'date'       => "\Carbon\Carbon",
+            'datetime', 'date'       => '\Illuminate\Support\Carbon',
             'json', 'jsonb'          => 'array',
             default                  => '?string',
         };
@@ -357,6 +362,20 @@ class CreateDataObject extends DatabaseInspectionCommand
         $key     = $this->convertCase($column['column']);
         $default = $column['default'] ? ' = '.$column['default'] : '';
         $default = $readOnly ? '' : $default;
+        //
+        //        if ($column['column'] === 'test' || $column['column'] === 'test2') {
+        //            dd($column['column'], $type, $key, $default, $readOnly);
+        //        }
+
+        if ($default !== '') {
+            $default = match ($type) {
+                'int'    => ' = '.(int)$column['default'],
+                'float'  => ' = '.(float)$column['default'],
+                'bool'   => ' = '.($column['default'] === '1' ? 'true' : 'false'),
+                'string' => ' = "'.$column['default'].'"',
+                default  => '',
+            };
+        }
 
         return 'public '.$type.' $'.$key.$default.';'.PHP_EOL;
     }
@@ -435,6 +454,23 @@ class CreateDataObject extends DatabaseInspectionCommand
             'default' => $column->getDefault(),
             'type'    => $column->getType()->getName(),
         ])->toArray();
+    }
+
+    //getOptions
+    protected function getOptions(): array
+    {
+        return [
+            ['database', "D", InputOption::VALUE_OPTIONAL, 'The database connection'],
+            ['model', null, InputOption::VALUE_OPTIONAL, 'The name of the model'],
+            ['table', null, InputOption::VALUE_OPTIONAL, 'Output the table information as JSON'],
+        ];
+    }
+
+    protected function getArguments(): array
+    {
+        return [
+            ['type', InputArgument::OPTIONAL, 'The type of the Data Object'],
+        ];
     }
 
 }
