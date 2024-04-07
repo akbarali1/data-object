@@ -208,3 +208,27 @@ Return string: `public readonly int $id;public string $full_name;`
 # 2.5 version
 
 `createProperty` method added to create a property return string and bug fix `arrayToClassProperty`
+
+# 2.6.2 version
+
+DataObject create console command
+
+```
+ php artisan do:create
+```
+Models Create DataObject
+```
+ php artisan do:create models
+```
+Tables Create DataObject 
+```
+ php artisan do:create tables
+```
+Search Table and create DataObject
+```
+ php artisan do:create tableSearch
+```
+Search Model and create DataObject
+```
+ php artisan do:create modelSearch
+```
