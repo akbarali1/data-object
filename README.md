@@ -6,10 +6,10 @@ composer require akbarali/data-object
 
 # TODO
 
-| Done ?               | Name                                                               | Version       |
-|:---------------------|:-------------------------------------------------------------------|:--------------|
-| :white_check_mark:   | Add `createProperty`                                               | 2.5 version   |
-| :white_large_square: | Add command to create `DataObject` via `Eloquent Model` or `Array` | In the future |
+| Done ?             | Name                                                                                    | Version |
+|:-------------------|:----------------------------------------------------------------------------------------|:--------|
+| :white_check_mark: | Add `createProperty`                                                                    | 2.5     |
+| :white_check_mark: | Add command to create `DataObject` via `Eloquent Model` or `Array` or `Database Tables` | 2.6.5   |
 
 # USAGE
 
@@ -216,26 +216,37 @@ DataObject create console command
 ```
  php artisan do:create
 ```
+
 Models Create DataObject
+
 ```
  php artisan do:create models
 ```
-Tables Create DataObject 
+
+Tables Create DataObject
+
 ```
  php artisan do:create tables
 ```
+
 Search Table and create DataObject
+
 ```
  php artisan do:create tableSearch
 ```
+
 Search Model and create DataObject
+
 ```
  php artisan do:create modelSearch
 ```
+
 Options
+
 ```
 php artisan do:create --model="App\Models\QQB\User"
 ```
+
 ```
 php artisan do:create --table="users"
 ```
