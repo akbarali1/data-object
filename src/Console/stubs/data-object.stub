@@ -1,0 +1,15 @@
+<?php
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use Akbarali\DataObject\DataObjectBase;
+
+/**
+ * Created by Console do:create
+ * Filename: {{ class }}.php
+ */
+class {{ class }} extends DataObjectBase
+{
+{{ properties }}
+}
