@@ -17,6 +17,7 @@ use function Laravel\Prompts\text;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\suggest;
 use function Laravel\Prompts\search;
+use function Laravel\Prompts\pause;
 
 class CreateDataObject extends DatabaseInspectionCommand
 {
@@ -260,13 +261,19 @@ class CreateDataObject extends DatabaseInspectionCommand
         }
 
         $class = $this->buildClass($modelColumns);
+
+        $this->components->info("DataObject ma'lumotlari:");
+        $this->components->twoColumnDetail('<fg=green;options=bold>Folder:</>', dirname($path));
+        $this->components->twoColumnDetail('<fg=green;options=bold>File:</>', $path);
+        pause("Ma'lumotlarni tekshiring. Yaratish uchun Enter tugmasini bosing...");
+
         $this->createFile($path, $class);
         $this->components->info('DataObject yaratildi');
         $this->components->twoColumnDetail('<fg=green;options=bold>Folder:</>', dirname($path));
         $this->components->twoColumnDetail('<fg=green;options=bold>File:</>', $path);
         $this->components->twoColumnDetail('<fg=green;options=bold>Size:</>', $this->formatSize($this->files->size($path)));
 
-        if (confirm('Agar xato yaratilgan deb hisoblasangiz "Ha" ni tanlang ?', false, 'Ha', 'Yo`q')) {
+        if (confirm('Xato yaratilga bo`lsa o`chirish uchun "Ha" ni tanlang ?', false, 'Ha', 'Yo`q')) {
             $this->deleteFile($path);
         }
     }
