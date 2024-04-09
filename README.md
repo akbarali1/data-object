@@ -6,11 +6,12 @@ composer require akbarali/data-object
 
 # TODO
 
-| Done ?               | Name                                                                         | Version       |
-|:---------------------|:-----------------------------------------------------------------------------|:--------------|
-| :white_check_mark:   | Add `createProperty`                                                         | 2.5           |
-| :white_check_mark:   | Add command to create `DataObject` via `Eloquent Model` or `Database Tables` | 2.6.5         |
-| :white_large_square: | Add command to create `DataObject` via PHP `Array`                           | In the future |
+| Done ?               | Name                                                                          | Version       |
+|:---------------------|:------------------------------------------------------------------------------|:--------------|
+| :white_check_mark:   | Add `createProperty`                                                          | 2.5           |
+| :white_check_mark:   | Add command to create `DataObject` via `Eloquent Model` or `Database Tables`  | 2.6.5         |
+| :white_large_square: | Add command to create `DataObject` via PHP `Array`                            | In the future |
+| :white_large_square: | Bug FIX `$model->toArray()` function change `created_at` add timezone bug dix | In the future |
 
 # USAGE
 
