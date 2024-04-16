@@ -276,14 +276,14 @@ class CreateDataObject extends DatabaseInspectionCommand
         $this->components->info('DataObject yaratildi');
         $this->components->twoColumnDetail('<fg=green;options=bold>Folder:</>', dirname($path));
         $this->components->twoColumnDetail('<fg=green;options=bold>File:</>', $path);
-        $this->components->twoColumnDetail('<fg=green;options=bold>Size:</>', $this->formatSize($this->files->size($path)));
+        $this->components->twoColumnDetail('<fg=green;options=bold>Size:</>', static::formatSize($this->files->size($path)));
 
         if (confirm('Xato yaratilga bo`lsa o`chirish uchun "Ha" ni tanlang ?', false, 'Ha', 'Yo`q')) {
             $this->deleteFile($path);
         }
     }
 
-    private function formatSize(int $bytes): string
+    public static function formatSize(int $bytes): string
     {
         if ($bytes < 1000 * 1024) {
             return number_format($bytes / 1024, 2).' KB';
