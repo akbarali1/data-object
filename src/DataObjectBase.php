@@ -22,7 +22,7 @@ abstract class DataObjectBase implements DataObjectContract
     protected array $_parameters = [];
 
     /**
-     * @param array $parameters
+     * @param  array  $parameters
      * @param       $field
      * @param       $defaultValue
      * @return mixed
@@ -33,7 +33,7 @@ abstract class DataObjectBase implements DataObjectContract
     }
 
     /**
-     * @param array $model
+     * @param  array  $model
      * @return static
      */
     public static function createFromArray(array $model): static
@@ -89,7 +89,7 @@ abstract class DataObjectBase implements DataObjectContract
     }
 
     /**
-     * @param Model $model
+     * @param  Model  $model
      * @return static
      */
     public static function createFromEloquentModel(Model $model): static
@@ -98,7 +98,7 @@ abstract class DataObjectBase implements DataObjectContract
     }
 
     /**
-     * @param string $json
+     * @param  string  $json
      * @return static
      * @throws \JsonException
      */
@@ -107,18 +107,17 @@ abstract class DataObjectBase implements DataObjectContract
         return self::createFromArray(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
-
     /**
-     * @param Model $model
+     * @param  Model  $model
      * @return static
      */
     public static function fromModel(Model $model): static
     {
-        return self::createFromArray($model->toArray());
+        return self::createFromEloquentModel($model);
     }
 
     /**
-     * @param array $model
+     * @param  array  $model
      * @return static
      */
     public static function fromArray(array $model): static
@@ -127,7 +126,7 @@ abstract class DataObjectBase implements DataObjectContract
     }
 
     /**
-     * @param string $json
+     * @param  string  $json
      * @return static
      * @throws \JsonException
      */
@@ -137,7 +136,7 @@ abstract class DataObjectBase implements DataObjectContract
     }
 
     /**
-     * @param bool $trim_nulls
+     * @param  bool  $trim_nulls
      * @return array
      */
     public function toArray(bool $trim_nulls = false): array
@@ -168,7 +167,7 @@ abstract class DataObjectBase implements DataObjectContract
     }
 
     /**
-     * @param bool $trim_nulls
+     * @param  bool  $trim_nulls
      * @return array
      */
     public function toSnakeArray(bool $trim_nulls = false): array
@@ -198,7 +197,7 @@ abstract class DataObjectBase implements DataObjectContract
     }
 
     /**
-     * @param bool $trim_nulls
+     * @param  bool  $trim_nulls
      * @return array
      */
     public function all(bool $trim_nulls = false): array
@@ -228,8 +227,8 @@ abstract class DataObjectBase implements DataObjectContract
     }
 
     /**
-     * @param mixed $model
-     * @param bool  $camelCase
+     * @param  mixed  $model
+     * @param  bool  $camelCase
      * @return string
      * @throws DataObjectException
      */
