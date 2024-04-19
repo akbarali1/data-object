@@ -13,6 +13,7 @@ composer require akbarali/data-object
 | :white_large_square: | Add command to create `DataObject` via PHP `Array`                              | In the future |
 | :white_large_square: | BUG FIX `$model->toArray()` function change `created_at` add timezone bug dix   | In the future |
 | :white_large_square: | Add `DataObject` `private` or `protected` `properties` getter and setter method | In the future |
+| :white_large_square: | Add creation without converting the `Eloquent Model` to an array.               | In the future |
 
 # USAGE
 
