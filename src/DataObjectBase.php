@@ -21,6 +21,8 @@ abstract class DataObjectBase implements DataObjectContract
 {
     protected array $_parameters = [];
 
+    protected function prepare(): void {}
+
     /**
      * @param  array  $parameters
      * @param       $field
@@ -62,7 +64,7 @@ abstract class DataObjectBase implements DataObjectContract
                 //array data objectlardan tashkil topgan bo`lsa
                 if (!is_null($types) && !is_null($value) && count($types) === 2 && $types[1]->getName() === 'array') {
                     $dataObjectName = $types[0]->getName();
-                    if (class_exists($dataObjectName) && new $dataObjectName instanceof DataObjectBase) {
+                    if (class_exists($dataObjectName) && new $dataObjectName instanceof self) {
                         $value = array_map(static fn($item) => $dataObjectName::createFromArray($item), $value);
                     }
                 } else {
@@ -71,12 +73,12 @@ abstract class DataObjectBase implements DataObjectContract
                 //DataObjectBase classdan tashkil topgan bo`lsa
             } elseif (is_array($value) && !is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
                 $dataObject = $validator->getType()->getName();
-                if (class_exists($dataObject) && new $dataObject instanceof DataObjectBase) {
+                if (class_exists($dataObject) && new $dataObject instanceof self) {
                     $value = $dataObject::createFromArray($value);
                 }
             } elseif (!is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
                 $dataObject = $validator->getType()->getName();
-                if (class_exists($dataObject) && !(new $dataObject instanceof DataObjectBase)) {
+                if (class_exists($dataObject) && !(new $dataObject instanceof self)) {
                     $newClass = $validator->getType()->getName();
                     $value    = new $newClass($value);
                 }
@@ -84,6 +86,7 @@ abstract class DataObjectBase implements DataObjectContract
             $validator->setAccessible(true);
             $validator->setValue($class, $value);
         }
+        $class->prepare();
 
         return $class;
     }
