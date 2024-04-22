@@ -21,6 +21,8 @@ abstract class DataObjectBase implements DataObjectContract
 {
     protected array $_parameters = [];
 
+    protected function prepare(): void {}
+
     /**
      * @param  array  $parameters
      * @param       $field
@@ -85,6 +87,7 @@ abstract class DataObjectBase implements DataObjectContract
             $validator->setAccessible(true);
             $validator->setValue($class, $value);
         }
+        $class->prepare();
 
         return $class;
     }
@@ -108,14 +111,13 @@ abstract class DataObjectBase implements DataObjectContract
         return self::createFromArray(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
     }
 
-
     /**
      * @param  Model  $model
      * @return static
      */
     public static function fromModel(Model $model): static
     {
-        return self::createFromArray($model->toArray());
+        return self::createFromEloquentModel($model);
     }
 
     /**
