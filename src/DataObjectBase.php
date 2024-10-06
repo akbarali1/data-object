@@ -66,7 +66,7 @@ abstract class DataObjectBase implements DataObjectContract
 				if (!is_null($types) && !is_null($value) && count($types) === 2 && $types[1]->getName() === 'array') {
 					$dataObjectName = $types[0]->getName();
 					if (class_exists($dataObjectName) && new $dataObjectName instanceof self) {
-						$value = array_map(static fn($item) => $dataObjectName::createFromArray($item), $value);
+						$value = array_map(static fn($item) => $dataObjectName::fromArray($item), $value);
 					}
 				} else {
 					$value = [];
@@ -75,7 +75,7 @@ abstract class DataObjectBase implements DataObjectContract
 			} elseif (is_array($value) && !is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
 				$dataObject = $validator->getType()->getName();
 				if (class_exists($dataObject) && new $dataObject instanceof self) {
-					$value = $dataObject::createFromArray($value);
+					$value = $dataObject::fromArray($value);
 				}
 			} elseif (!is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
 				$dataObject = $validator->getType()->getName();
