@@ -213,7 +213,7 @@ abstract class DataObjectBase implements DataObjectContract
 		return $this->toArray($trim_nulls);
 	}
 	
-	public static function arrayToClassProperty(array $array, bool $camelCase = false): string
+	public static function arrayToClassProperty(array $array, bool $camelCase = true): string
 	{
 		$string = '';
 		foreach ($array as $key => $value) {
