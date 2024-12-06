@@ -69,7 +69,9 @@ abstract class DataObjectBase implements DataObjectContract
 						$value = array_map(static fn($item) => $dataObjectName::fromArray($item), $value);
 					}
 				} else {
-					$value = [];
+					if (count($types) === 2 && $types[1]->getName() === 'array') {
+						$value = [];
+					}
 				}
 				//DataObjectBase classdan tashkil topgan bo`lsa
 			} elseif (is_array($value) && !is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
