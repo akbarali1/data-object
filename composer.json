@@ -1,6 +1,6 @@
 {
   "name":"akbarali/data-object",
-  "version":"2.8.0",
+  "version":"2.8.1",
   "description":"Data Object PHP Laravel",
   "license":"MIT",
   "minimum-stability":"stable",
@@ -22,11 +22,11 @@
   ],
   "require":{
     "php":">=8.0",
-    "ext-json":"*",
-    "laravel/framework":"^9.0|^10.0|^11.0"
+    "ext-json":"*"
   },
   "require-dev":{
-    "roave/security-advisories":"dev-latest"
+    "roave/security-advisories":"dev-latest",
+    "laravel/framework":"^9.0|^10.0|^11.0"
   },
   "extra":{
     "laravel":{
