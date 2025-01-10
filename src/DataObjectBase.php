@@ -5,7 +5,6 @@ namespace Akbarali\DataObject;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use ReflectionUnionType;
 
 /**
  * Created by PhpStorm.
@@ -32,7 +31,7 @@ abstract class DataObjectBase implements DataObjectContract
 	 */
 	protected function getValue(array $parameters, $field, $defaultValue = null): mixed
 	{
-		return ($parameters[$field] ?? $parameters[Str::snake($field)] ?? $defaultValue);
+		return $parameters[$field] ?? $parameters[Str::snake($field)] ?? $defaultValue;
 	}
 	
 	/**
@@ -41,61 +40,18 @@ abstract class DataObjectBase implements DataObjectContract
 	 */
 	public static function createFromArray(array $model): static
 	{
-		$fields = DOCache::resolve(static::class, static function () {
-			$class  = new \ReflectionClass(static::class);
-			$fields = [];
-			foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $reflectionProperty) {
-				if ($reflectionProperty->isStatic()) {
-					continue;
-				}
-				$field          = $reflectionProperty->getName();
-				$fields[$field] = $reflectionProperty;
-			}
-			
-			return $fields;
-		});
-		
-		$class              = new static();
-		$class->_parameters = $model;
-		/** @var array|\ReflectionProperty[] $fields */
-		foreach ($fields as $field => $validator) {
-			$value = ($class->_parameters[$field] ?? $class->_parameters[Str::snake($field)] ?? $validator->getDefaultValue() ?? null);
-			if ($validator->getType() instanceof ReflectionUnionType) {
-				$types = $validator->getType()->getTypes();
-				//array data objectlardan tashkil topgan bo`lsa
-				if (!is_null($types) && !is_null($value) && count($types) === 2 && $types[1]->getName() === 'array') {
-					$dataObjectName = $types[0]->getName();
-					if (class_exists($dataObjectName) && new $dataObjectName instanceof self) {
-						$value = array_map(static fn($item) => $dataObjectName::fromArray($item), $value);
-					}
-				} else {
-					if (count($types) === 2 && $types[1]->getName() === 'array') {
-						$value = [];
-					}
-				}
-				//DataObjectBase classdan tashkil topgan bo`lsa
-			} elseif (is_array($value) && !is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
-				$dataObject = $validator->getType()->getName();
-				if (class_exists($dataObject) && new $dataObject instanceof self) {
-					$value = $dataObject::fromArray($value);
-				}
-			} elseif (!is_null($validator->getType()) && class_exists($validator->getType()->getName())) {
-				$dataObject = $validator->getType()->getName();
-				if (!($value instanceof $dataObject) && !(new $dataObject instanceof self)) {
-					$newClass = $validator->getType()->getName();
-					$value    = new $newClass($value);
-					if ($value instanceof Carbon) {
-						$value->setTimezone(config('app.timezone'));
-					}
-				}
-			}
-			
-			$validator->setAccessible(true);
-			$validator->setValue($class, $value);
+		$fields                = DOCache::resolve(static::class, static fn(): array => static::getClassFields());
+		$instance              = new static();
+		$instance->_parameters = $model;
+		foreach ($fields as $field => $property) {
+			$value = $instance->resolveFieldValue($model, $field, $property);
+			$property->setAccessible(true);
+			$property->setValue($instance, $value);
 		}
-		$class->prepare();
 		
-		return $class;
+		$instance->prepare();
+		
+		return $instance;
 	}
 	
 	/**
@@ -104,7 +60,7 @@ abstract class DataObjectBase implements DataObjectContract
 	 */
 	public static function createFromEloquentModel(Model $model): static
 	{
-		return self::createFromArray($model->toArray());
+		return static::createFromArray($model->toArray());
 	}
 	
 	/**
@@ -114,7 +70,7 @@ abstract class DataObjectBase implements DataObjectContract
 	 */
 	public static function createFromJson(string $json): static
 	{
-		return self::createFromArray(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+		return static::createFromArray(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
 	}
 	
 	/**
@@ -123,7 +79,7 @@ abstract class DataObjectBase implements DataObjectContract
 	 */
 	public static function fromModel(Model $model): static
 	{
-		return self::createFromEloquentModel($model);
+		return static::createFromEloquentModel($model);
 	}
 	
 	/**
@@ -132,7 +88,7 @@ abstract class DataObjectBase implements DataObjectContract
 	 */
 	public static function fromArray(array $model): static
 	{
-		return self::createFromArray($model);
+		return static::createFromArray($model);
 	}
 	
 	/**
@@ -142,7 +98,7 @@ abstract class DataObjectBase implements DataObjectContract
 	 */
 	public static function fromJson(string $json): static
 	{
-		return self::createFromJson($json);
+		return static::createFromJson($json);
 	}
 	
 	/**
@@ -151,29 +107,7 @@ abstract class DataObjectBase implements DataObjectContract
 	 */
 	public function toArray(bool $trim_nulls = false): array
 	{
-		$data = [];
-		try {
-			//TODO: Bunga ham DOCache qo`shish kerak
-			$class      = new \ReflectionClass(static::class);
-			$properties = $class->getProperties(\ReflectionProperty::IS_PUBLIC);
-			foreach ($properties as $reflectionProperty) {
-				if ($reflectionProperty->isStatic()) {
-					continue;
-				}
-				$value = $reflectionProperty->getValue($this);
-				if ($trim_nulls === true) {
-					if (!is_null($value)) {
-						$data[$reflectionProperty->getName()] = $value;
-					}
-				} else {
-					$data[$reflectionProperty->getName()] = $value;
-				}
-			}
-		} catch (\Exception $exception) {
-		
-		}
-		
-		return $data;
+		return $this->generateArray($trim_nulls);
 	}
 	
 	/**
@@ -182,43 +116,17 @@ abstract class DataObjectBase implements DataObjectContract
 	 */
 	public function toSnakeArray(bool $trim_nulls = false): array
 	{
-		$data = [];
-		try {
-			$class      = new \ReflectionClass(static::class);
-			$properties = $class->getProperties(\ReflectionProperty::IS_PUBLIC);
-			foreach ($properties as $reflectionProperty) {
-				if ($reflectionProperty->isStatic()) {
-					continue;
-				}
-				$value = $reflectionProperty->getValue($this);
-				if ($trim_nulls === true) {
-					if (!is_null($value)) {
-						$data[Str::snake($reflectionProperty->getName())] = $value;
-					}
-				} else {
-					$data[Str::snake($reflectionProperty->getName())] = $value;
-				}
-			}
-		} catch (\Exception $exception) {
-		
-		}
-		
-		return $data;
+		return $this->generateArray($trim_nulls, true);
 	}
 	
 	/**
-	 * @param  bool  $trim_nulls
+	 * @param  string|array  $forget
+	 * @param  bool          $trim_nulls
 	 * @return array
 	 */
-	public function all(bool $trim_nulls = false): array
+	public function toArrayForgetProperty(string|array $forget, bool $trim_nulls = false): array
 	{
-		return $this->toArray($trim_nulls);
-	}
-	
-	public function toArrayForgetProperty(string|array $forget, bool $trimNulls = false): array
-	{
-		$array = $this->toArray($trimNulls);
-		
+		$array = $this->toArray($trim_nulls);
 		foreach ((array) $forget as $key) {
 			unset($array[$key]);
 		}
@@ -226,9 +134,14 @@ abstract class DataObjectBase implements DataObjectContract
 		return $array;
 	}
 	
+	/**
+	 * @param  array  $array
+	 * @param  bool   $camelCase
+	 * @return string
+	 */
 	public static function arrayToClassProperty(array $array, bool $camelCase = true): string
 	{
-		$string = '';
+		$properties = [];
 		foreach ($array as $key => $value) {
 			$type = match (gettype($value)) {
 				'integer' => 'int',
@@ -240,11 +153,11 @@ abstract class DataObjectBase implements DataObjectContract
 			if (str_contains($key, 'id')) {
 				$type = 'readonly int';
 			}
-			$key    = $camelCase ? Str::camel($key) : $key;
-			$string .= 'public '.$type.' $'.$key.';'.PHP_EOL;
+			$key          = $camelCase ? Str::camel($key) : $key;
+			$properties[] = "public $type \$$key;";
 		}
 		
-		return $string;
+		return implode(PHP_EOL, $properties);
 	}
 	
 	/**
@@ -256,33 +169,121 @@ abstract class DataObjectBase implements DataObjectContract
 	public static function createProperty(mixed $model, bool $camelCase = false): string
 	{
 		if (is_array($model)) {
-			return self::arrayToClassProperty($model, $camelCase);
+			return static::arrayToClassProperty($model, $camelCase);
 		}
 		
 		if ($model instanceof Model) {
-			return self::arrayToClassProperty($model->toArray(), $camelCase);
+			return static::arrayToClassProperty($model->toArray(), $camelCase);
 		}
 		
 		if (is_object($model) && method_exists($model, 'first') && method_exists($model, 'toArray')) {
-			return self::arrayToClassProperty($model->first()->toArray(), $camelCase);
+			return static::arrayToClassProperty($model->first()->toArray(), $camelCase);
 		}
 		
 		if (is_object($model) && method_exists($model, 'toArray')) {
-			return self::arrayToClassProperty($model->toArray(), $camelCase);
+			return static::arrayToClassProperty($model->toArray(), $camelCase);
 		}
 		
 		throw new DataObjectException('Invalid model type', DataObjectException::INVALID_MODEL_TYPE);
 	}
 	
-	/*public static function savePropertyToFile(mixed $model): string
+	/**
+	 * @return array
+	 */
+	private static function getClassFields(): array
 	{
-		$allProperties = self::createProperty($model);
-		$class         = new \ReflectionClass(static::class);
-		$file          = fopen($class->getFileName(), 'r+');
-		$content       = fread($file, filesize($class->getFileName()));
-		$content       = str_replace('}', $allProperties."\n}", $content);
-		fwrite($file, $content);
-		fclose($file);
-		return 'Properties added successfully';
-	}*/
+		$class  = new \ReflectionClass(static::class);
+		$fields = [];
+		foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+			if (!$property->isStatic()) {
+				$fields[$property->getName()] = $property;
+			}
+		}
+		
+		return $fields;
+	}
+	
+	/**
+	 * @param  array                $model
+	 * @param  string               $field
+	 * @param  \ReflectionProperty  $property
+	 * @return mixed
+	 */
+	private function resolveFieldValue(array $model, string $field, \ReflectionProperty $property): mixed
+	{
+		$value = $model[$field] ?? $model[Str::snake($field)] ?? $property->getDefaultValue() ?? null;
+		
+		$type = $property->getType();
+		if ($type instanceof \ReflectionUnionType) {
+			return $this->handleUnionType($type, $value);
+		}
+		
+		if (is_array($value) && $type && class_exists($type->getName()) && is_subclass_of($type->getName(), static::class)) {
+			return $type->getName()::fromArray($value);
+		}
+		
+		if ($type && class_exists($type->getName())) {
+			return $this->instantiateObject($type->getName(), $value);
+		}
+		
+		return $value;
+	}
+	
+	/**
+	 * @param  \ReflectionUnionType  $type
+	 * @param  mixed                 $value
+	 * @return mixed
+	 */
+	private function handleUnionType(\ReflectionUnionType $type, mixed $value): mixed
+	{
+		$types = $type->getTypes();
+		if (count($types) === 2 && $types[1]->getName() === 'array') {
+			$dataObject = $types[0]->getName();
+			if (class_exists($dataObject) && is_subclass_of($dataObject, static::class) && is_array($value)) {
+				return array_map(static fn($item) => $dataObject::fromArray($item), $value);
+			}
+			
+			return [];
+		}
+		
+		return $value;
+	}
+	
+	/**
+	 * @param  string  $className
+	 * @param  mixed   $value
+	 * @return mixed
+	 */
+	private function instantiateObject(string $className, mixed $value): mixed
+	{
+		if (!is_object($value)) {
+			$value = new $className($value);
+		}
+		if ($value instanceof Carbon) {
+			$value->setTimezone(config('app.timezone'));
+		}
+		
+		return $value;
+	}
+	
+	/**
+	 * @param  bool  $trim_nulls
+	 * @param  bool  $snakeCase
+	 * @return array
+	 */
+	private function generateArray(bool $trim_nulls, bool $snakeCase = false): array
+	{
+		$data       = [];
+		$properties = static::getClassFields();
+		foreach ($properties as $name => $property) {
+			$value = $property->getValue($this);
+			if ($trim_nulls && $value === null) {
+				continue;
+			}
+			$key        = $snakeCase ? Str::snake($name) : $name;
+			$data[$key] = $value;
+		}
+		
+		return $data;
+	}
 }
