@@ -114,6 +114,15 @@ abstract class DataObjectBase implements DataObjectContract
 	 * @param  bool  $trim_nulls
 	 * @return array
 	 */
+	public function all(bool $trim_nulls = false): array
+	{
+		return $this->toArray($trim_nulls);
+	}
+	
+	/**
+	 * @param  bool  $trim_nulls
+	 * @return array
+	 */
 	public function toSnakeArray(bool $trim_nulls = false): array
 	{
 		return $this->generateArray($trim_nulls, true);
