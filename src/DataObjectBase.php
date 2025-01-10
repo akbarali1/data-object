@@ -215,6 +215,17 @@ abstract class DataObjectBase implements DataObjectContract
 		return $this->toArray($trim_nulls);
 	}
 	
+	public function toArrayForgetProperty(string|array $forget, bool $trimNulls = false): array
+	{
+		$array = $this->toArray($trimNulls);
+		
+		foreach ((array) $forget as $key) {
+			unset($array[$key]);
+		}
+		
+		return $array;
+	}
+	
 	public static function arrayToClassProperty(array $array, bool $camelCase = true): string
 	{
 		$string = '';

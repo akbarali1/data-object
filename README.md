@@ -6,12 +6,12 @@ composer require akbarali/data-object
 
 # TODO
 
-| Done ?               | Name                                                                            | Version       |
-|:---------------------|:--------------------------------------------------------------------------------|:--------------|
-| :white_check_mark:   | Add `createProperty`                                                            | 2.5           |
-| :white_check_mark:   | Add command to create `DataObject` via `Eloquent Model` or `Database Tables`    | 2.6.5         |
-| :white_large_square: | Add command to create `DataObject` via PHP `Array`                              | In the future |
-| :white_large_square: | Add creation without converting the `Eloquent Model` to an array.               | In the future |
+| Done ?               | Name                                                                         | Version       |
+|:---------------------|:-----------------------------------------------------------------------------|:--------------|
+| :white_check_mark:   | Add `createProperty`                                                         | 2.5           |
+| :white_check_mark:   | Add command to create `DataObject` via `Eloquent Model` or `Database Tables` | 2.6.5         |
+| :white_large_square: | Add command to create `DataObject` via PHP `Array`                           | In the future |
+| :white_large_square: | Add creation without converting the `Eloquent Model` to an array.            | In the future |
 
 # USAGE
 
@@ -269,3 +269,7 @@ php artisan do:create --model="App\Models\QQB\User"
 ```
 php artisan do:create --table="users"
 ```
+
+# 2.8.2 version
+
+Add `toArrayForgetProperty` add new method. 
