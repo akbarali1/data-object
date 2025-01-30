@@ -1,21 +1,21 @@
 <?php
+declare(strict_types=1);
 
 namespace Akbarali\DataObject;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use JsonException;
+use ReflectionClass;
+use ReflectionProperty;
+use ReflectionUnionType;
 
 /**
- * Created by PhpStorm.
- * Filename: DataObjectBase.php
- * Project Name: data-object
- * Author: akbarali
- * Date: 31/01/2024
- * Time: 14:51
- * GitHub: https://github.com/akbarali1
- * Telegram: @akbar_aka
- * E-mail: me@akbarali.uz
+ * Class DataObjectBase
+ * Abstract class to handle data transformations.
+ *
+ * @package Akbarali\DataObject
  */
 abstract class DataObjectBase implements DataObjectContract
 {
@@ -24,95 +24,85 @@ abstract class DataObjectBase implements DataObjectContract
 	protected function prepare(): void {}
 	
 	/**
-	 * @param  array  $parameters
-	 * @param         $field
-	 * @param         $defaultValue
-	 * @return mixed
+	 * Get a value from the given array.
 	 */
-	protected function getValue(array $parameters, $field, $defaultValue = null): mixed
+	protected function getValue(array $parameters, string $field, mixed $defaultValue = null): mixed
 	{
 		return $parameters[$field] ?? $parameters[Str::snake($field)] ?? $defaultValue;
 	}
 	
 	/**
-	 * @param  array  $model
-	 * @return static
+	 * Creates an instance from an array.
 	 */
 	public static function createFromArray(array $model): static
 	{
-		$fields                = DOCache::resolve(static::class, static fn(): array => static::getClassFields());
-		$instance              = new static();
-		$instance->_parameters = $model;
+		$fields             = DOCache::resolve(static::class, static fn() => self::getPublicProperties());
+		$class              = new static();
+		$class->_parameters = $model;
+		
 		foreach ($fields as $field => $property) {
-			$value = $instance->resolveFieldValue($model, $field, $property);
-			$property->setAccessible(true);
-			$property->setValue($instance, $value);
+			$class->setPropertyValue($property, $field);
 		}
 		
-		$instance->prepare();
+		$class->prepare();
 		
-		return $instance;
+		return $class;
 	}
 	
 	/**
-	 * @param  Model  $model
-	 * @return static
+	 * Creates an instance from an Eloquent Model.
 	 */
 	public static function createFromEloquentModel(Model $model): static
 	{
-		return static::createFromArray($model->toArray());
+		return self::createFromArray($model->toArray());
 	}
 	
 	/**
-	 * @param  string  $json
-	 * @throws \JsonException
-	 * @return static
+	 * Creates an instance from a JSON string.
+	 *
+	 * @throws JsonException
 	 */
 	public static function createFromJson(string $json): static
 	{
-		return static::createFromArray(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
+		return self::createFromArray(json_decode($json, true, 512, JSON_THROW_ON_ERROR));
 	}
 	
 	/**
-	 * @param  Model  $model
-	 * @return static
+	 * Wrapper functions for `createFromArray`.
 	 */
 	public static function fromModel(Model $model): static
 	{
-		return static::createFromEloquentModel($model);
+		return self::createFromEloquentModel($model);
 	}
 	
-	/**
-	 * @param  array  $model
-	 * @return static
-	 */
 	public static function fromArray(array $model): static
 	{
-		return static::createFromArray($model);
+		return self::createFromArray($model);
 	}
 	
-	/**
-	 * @param  string  $json
-	 * @throws \JsonException
-	 * @return static
-	 */
 	public static function fromJson(string $json): static
 	{
-		return static::createFromJson($json);
+		return self::createFromJson($json);
 	}
 	
 	/**
-	 * @param  bool  $trim_nulls
-	 * @return array
+	 * Convert object properties to an array.
 	 */
 	public function toArray(bool $trim_nulls = false): array
 	{
-		return $this->generateArray($trim_nulls);
+		return $this->extractProperties($trim_nulls);
 	}
 	
 	/**
-	 * @param  bool  $trim_nulls
-	 * @return array
+	 * Convert object properties to a snake_case array.
+	 */
+	public function toSnakeArray(bool $trim_nulls = false): array
+	{
+		return $this->extractProperties($trim_nulls, true);
+	}
+	
+	/**
+	 * Alias for `toArray`
 	 */
 	public function all(bool $trim_nulls = false): array
 	{
@@ -120,18 +110,7 @@ abstract class DataObjectBase implements DataObjectContract
 	}
 	
 	/**
-	 * @param  bool  $trim_nulls
-	 * @return array
-	 */
-	public function toSnakeArray(bool $trim_nulls = false): array
-	{
-		return $this->generateArray($trim_nulls, true);
-	}
-	
-	/**
-	 * @param  string|array  $forget
-	 * @param  bool          $trim_nulls
-	 * @return array
+	 * Convert object to array and remove specific keys.
 	 */
 	public function toArrayForgetProperty(string|array $forget, bool $trim_nulls = false): array
 	{
@@ -144,152 +123,101 @@ abstract class DataObjectBase implements DataObjectContract
 	}
 	
 	/**
-	 * @param  array  $array
-	 * @param  bool   $camelCase
-	 * @return string
+	 * Generate class property definitions from an array.
 	 */
 	public static function arrayToClassProperty(array $array, bool $camelCase = true): string
 	{
-		$properties = [];
-		foreach ($array as $key => $value) {
-			$type = match (gettype($value)) {
-				'integer' => 'int',
-				'double'  => 'float',
-				'string'  => 'string',
-				'array'   => 'array',
-				default   => '?string',
-			};
-			if (str_contains($key, 'id')) {
-				$type = 'readonly int';
-			}
-			$key          = $camelCase ? Str::camel($key) : $key;
-			$properties[] = "public $type \$$key;";
-		}
-		
-		return implode(PHP_EOL, $properties);
+		return implode(PHP_EOL, array_map(static function ($key, $value) use ($camelCase) {
+				$type = match (gettype($value)) {
+					'integer' => 'int',
+					'double'  => 'float',
+					'string'  => 'string',
+					'array'   => 'array',
+					default   => '?string',
+				};
+				if (str_contains($key, 'id')) {
+					$type = 'readonly int';
+				}
+				
+				return 'public '.$type.' $'.($camelCase ? Str::camel($key) : $key).';';
+			}, array_keys($array), $array)).PHP_EOL;
 	}
 	
 	/**
-	 * @param  mixed  $model
-	 * @param  bool   $camelCase
-	 * @throws DataObjectException
-	 * @return string
+	 * Generate class properties dynamically.
 	 */
 	public static function createProperty(mixed $model, bool $camelCase = false): string
 	{
-		if (is_array($model)) {
-			return static::arrayToClassProperty($model, $camelCase);
-		}
+		$data = match (true) {
+			is_array($model)                                      => $model,
+			$model instanceof Model                               => $model->toArray(),
+			is_object($model) && method_exists($model, 'toArray') => $model->toArray(),
+			default                                               => throw new DataObjectException('Invalid model type', DataObjectException::INVALID_MODEL_TYPE)
+		};
 		
-		if ($model instanceof Model) {
-			return static::arrayToClassProperty($model->toArray(), $camelCase);
-		}
-		
-		if (is_object($model) && method_exists($model, 'first') && method_exists($model, 'toArray')) {
-			return static::arrayToClassProperty($model->first()->toArray(), $camelCase);
-		}
-		
-		if (is_object($model) && method_exists($model, 'toArray')) {
-			return static::arrayToClassProperty($model->toArray(), $camelCase);
-		}
-		
-		throw new DataObjectException('Invalid model type', DataObjectException::INVALID_MODEL_TYPE);
+		return self::arrayToClassProperty($data, $camelCase);
 	}
 	
 	/**
-	 * @return array
+	 * Retrieve public properties using reflection.
 	 */
-	private static function getClassFields(): array
+	private static function getPublicProperties(): array
 	{
-		$class  = new \ReflectionClass(static::class);
-		$fields = [];
-		foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+		$class      = new ReflectionClass(static::class);
+		$properties = [];
+		
+		foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
 			if (!$property->isStatic()) {
-				$fields[$property->getName()] = $property;
+				$properties[$property->getName()] = $property;
 			}
 		}
 		
-		return $fields;
+		return $properties;
 	}
 	
 	/**
-	 * @param  array                $model
-	 * @param  string               $field
-	 * @param  \ReflectionProperty  $property
-	 * @return mixed
+	 * Set a property value dynamically.
 	 */
-	private function resolveFieldValue(array $model, string $field, \ReflectionProperty $property): mixed
+	private function setPropertyValue(ReflectionProperty $property, string $field): void
 	{
-		$value = $model[$field] ?? $model[Str::snake($field)] ?? $property->getDefaultValue() ?? null;
+		$value = $this->_parameters[$field] ?? $this->_parameters[Str::snake($field)] ?? $property->getDefaultValue() ?? null;
 		
 		$type = $property->getType();
-		if ($type instanceof \ReflectionUnionType) {
-			return $this->handleUnionType($type, $value);
-		}
-		
-		if (is_array($value) && $type && class_exists($type->getName()) && is_subclass_of($type->getName(), static::class)) {
-			return $type->getName()::fromArray($value);
-		}
-		
-		if ($type && class_exists($type->getName())) {
-			return $this->instantiateObject($type->getName(), $value);
-		}
-		
-		return $value;
-	}
-	
-	/**
-	 * @param  \ReflectionUnionType  $type
-	 * @param  mixed                 $value
-	 * @return mixed
-	 */
-	private function handleUnionType(\ReflectionUnionType $type, mixed $value): mixed
-	{
-		$types = $type->getTypes();
-		if (count($types) === 2 && $types[1]->getName() === 'array') {
-			$dataObject = $types[0]->getName();
-			if (class_exists($dataObject) && is_subclass_of($dataObject, static::class) && is_array($value)) {
-				return array_map(static fn($item) => $dataObject::fromArray($item), $value);
+		if ($type instanceof ReflectionUnionType) {
+			$types = $type->getTypes();
+			if (count($types) === 2 && $types[1]->getName() === 'array') {
+				$className = $types[0]->getName();
+				$value     = class_exists($className) && is_subclass_of($className, self::class) ? array_map(static fn($item) => $className::fromArray($item), $value) : [];
 			}
-			
-			return [];
+		} elseif (is_array($value) && class_exists($type?->getName()) && is_subclass_of($type->getName(), self::class)) {
+			$value = $type->getName()::fromArray($value);
+		} elseif (class_exists($type?->getName())) {
+			$className = $type->getName();
+			if (!($value instanceof $className) && is_subclass_of($className, self::class)) {
+				$value = new $className($value);
+				if ($value instanceof Carbon) {
+					$value->setTimezone(config('app.timezone'));
+				}
+			}
 		}
 		
-		return $value;
+		$property->setAccessible(true);
+		$property->setValue($this, $value);
 	}
 	
 	/**
-	 * @param  string  $className
-	 * @param  mixed   $value
-	 * @return mixed
+	 * Extract object properties into an array.
 	 */
-	private function instantiateObject(string $className, mixed $value): mixed
+	private function extractProperties(bool $trim_nulls, bool $snakeCase = false): array
 	{
-		if (!is_object($value)) {
-			$value = new $className($value);
-		}
-		if ($value instanceof Carbon) {
-			$value->setTimezone(config('app.timezone'));
-		}
+		$data = [];
 		
-		return $value;
-	}
-	
-	/**
-	 * @param  bool  $trim_nulls
-	 * @param  bool  $snakeCase
-	 * @return array
-	 */
-	private function generateArray(bool $trim_nulls, bool $snakeCase = false): array
-	{
-		$data       = [];
-		$properties = static::getClassFields();
-		foreach ($properties as $name => $property) {
+		foreach (self::getPublicProperties() as $property) {
 			$value = $property->getValue($this);
-			if ($trim_nulls && $value === null) {
+			if ($trim_nulls && is_null($value)) {
 				continue;
 			}
-			$key        = $snakeCase ? Str::snake($name) : $name;
+			$key        = $snakeCase ? Str::snake($property->getName()) : $property->getName();
 			$data[$key] = $value;
 		}
 		
