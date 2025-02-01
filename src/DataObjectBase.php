@@ -194,6 +194,7 @@ abstract class DataObjectBase implements DataObjectContract
 		} elseif (class_exists($type?->getName())) {
 			$className = $type->getName();
 			if (!($value instanceof $className) && is_subclass_of($className, self::class)) {
+			if (!($value instanceof $className) && !(new $className instanceof self)) {
 				$value = new $className($value);
 				if ($value instanceof Carbon) {
 					$value->setTimezone(config('app.timezone'));
