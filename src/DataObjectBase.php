@@ -189,9 +189,9 @@ abstract class DataObjectBase implements DataObjectContract
 				$className = $types[0]->getName();
 				$value     = class_exists($className) && is_subclass_of($className, self::class) ? array_map(static fn($item) => $className::fromArray($item), $value) : [];
 			}
-		} elseif (is_array($value) && class_exists($type?->getName()) && is_subclass_of($type->getName(), self::class)) {
+		} elseif (is_array($value) && !is_null($type?->getName()) && class_exists($type?->getName()) && is_subclass_of($type->getName(), self::class)) {
 			$value = $type->getName()::fromArray($value);
-		} elseif (class_exists($type?->getName())) {
+		} elseif (!is_null($type?->getName()) && class_exists($type?->getName())) {
 			$className = $type->getName();
 			if (!($value instanceof $className) && !(new $className instanceof self)) {
 				$value = new $className($value);
